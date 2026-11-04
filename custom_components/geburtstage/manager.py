@@ -35,6 +35,7 @@ from .logic import (
     build_greeting_message,
     build_reminder_message,
     describe,
+    greeting_for,
     norm_lang,
     sort_key,
 )
@@ -536,7 +537,7 @@ class GeburtstageManager:
         self._fire(
             EVENT_TYPE_BIRTHDAY,
             {
-                **self._event_person(desc),
+                **self._event_person(person, desc),
                 "days_until": 0,
                 "message": message,
                 "notify": person.get("greeting_notify", ""),
@@ -561,7 +562,7 @@ class GeburtstageManager:
         self._fire(
             EVENT_TYPE_REMINDER,
             {
-                **self._event_person(desc),
+                **self._event_person(person, desc),
                 "days_until": days,
                 "message": message,
                 "notify": target,
@@ -570,8 +571,7 @@ class GeburtstageManager:
             },
         )
 
-    @staticmethod
-    def _event_person(desc: dict[str, Any]) -> dict[str, Any]:
+    def _event_person(self, person: dict[str, Any], desc: dict[str, Any]) -> dict[str, Any]:
         return {
             "person_id": desc["id"],
             "name": desc["name"],
@@ -579,6 +579,7 @@ class GeburtstageManager:
             "last_name": desc["last_name"],
             "salutation": desc["salutation"],
             "style": desc["style"],
+            "greeting": greeting_for(person, self.lang),
             "age": desc["turning_age"],
             "birthdate": desc["birthdate"],
             "date": desc["next_date"],

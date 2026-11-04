@@ -1,0 +1,29 @@
+# Änderungen / Changelog
+
+## [0.2.0] – 2026-11-04
+
+### Neu
+- **Suchbare Zielauswahl:** Das Feld „Erinnerungen senden an“ (Einstellungen) und „Benachrichtigung über“ (Person) ist jetzt eine Suche. Ab 2 Buchstaben wird gefiltert, mehrere Wörter werden einzeln gesucht („alexa k“ findet „Alexa Media Kuchenalexa“), Treffer sind markiert. Bedienung auch per Pfeiltasten, Enter und Esc.
+- **Platzhalter erklärt:** Die Einstellungen enthalten eine Tabelle aller Platzhalter mit Beschreibung, Beispiel und Geltungsbereich. Ein Klick fügt den Platzhalter an der Cursor-Position ein.
+- **Ereignis mit Begrüßung:** Die Ereignisse `geburtstage_birthday` und `geburtstage_reminder` enthalten jetzt das Feld `greeting` (z. B. „Lieber Hugo“, „Sehr geehrte Frau Meier“).
+- **Platzhalter in eigenen Texten:** Der Service `geburtstage.send_greeting` ersetzt im Parameter `message` Platzhalter wie `{gruss}`, `{alter}` oder `{vollername}`.
+- **README:** Neue Beispiele für Automationen (eigener Text, Platzhalter, runde Geburtstage, Erinnerung an Gruppe, Ansage, Partylicht, Wochenübersicht) und ein Hinweis zum Neuladen des Browsers nach Installation/Update.
+
+### Hinweis zum Update
+Nach dem Update den Browser mit **Strg + F5** neu laden, damit die neue Version der Karte und des Panels geladen wird.
+
+---
+
+### New
+- **Searchable target selection:** “Send reminders to” (settings) and “Notify via” (person) are now a search field. Filtering starts after 2 letters, every typed word must match (“alexa k” finds “Alexa Media Kuchenalexa”), matches are highlighted. Works with arrow keys, Enter and Esc.
+- **Placeholders explained:** the settings contain a table of all placeholders with description, example and scope. A click inserts the placeholder at the cursor position.
+- **Event with greeting:** the events `geburtstage_birthday` and `geburtstage_reminder` now contain the field `greeting` (e.g. “Dear Hugo”).
+- **Placeholders in your own texts:** the service `geburtstage.send_greeting` replaces placeholders such as `{greeting}`, `{age}` or `{full_name}` in `message`.
+- **README:** new automation examples and a note about reloading the browser after installing or updating.
+
+### Update note
+After updating, reload the browser with **Ctrl + F5** so the new card and panel are loaded.
+
+## [0.1.0] – 2026-11-04
+
+Erste Version / First version: Panel zum Verwalten der Personen, Gratulationen und Erinnerungen über vorhandene Notify-Dienste, zufällige Texte je Anrede und Stil, Ereignisse für eigene Automationen, Kalender und Sensoren, Dashboard-Karte mit visuellem Editor, CSV-/vCard-Import, Deutsch und Englisch.

@@ -28,8 +28,14 @@ jobs:
         run: |
           cd custom_components/geburtstage
           zip -r ../../geburtstage.zip . -x "__pycache__/*"
+      - name: Extract release notes from CHANGELOG.md
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '/^## \[/{ if (found) exit; if (index($0, "[" v "]")) found=1; next } found' CHANGELOG.md > release_notes.md
+          test -s release_notes.md || echo "Release ${GITHUB_REF_NAME}" > release_notes.md
+          cat release_notes.md
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           files: geburtstage.zip
-          generate_release_notes: true
+          body_path: release_notes.md

@@ -11,6 +11,7 @@ from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 
 from .const import DOMAIN, MAX_REMINDER_DAYS, SALUTATIONS, STYLES
+from .logic import build_context, describe, render
 from .manager import get_manager
 
 _PERSON_FIELDS = {
@@ -80,7 +81,12 @@ def async_register_services(hass: HomeAssistant) -> None:
     async def send_greeting(call: ServiceCall) -> dict[str, Any]:
         manager = get_manager(hass)
         person = manager.find_person(call.data["person"])
-        message = call.data.get("message") or manager.greeting_text(person)
+        if custom := call.data.get("message"):
+            # Own text: the integration's placeholders ({gruss}, {alter}, ...) are replaced.
+            desc = describe(person, manager.today)
+            message = render(custom, build_context(person, desc, manager.lang, 0))
+        else:
+            message = manager.greeting_text(person)
         target = call.data.get("notify") or person.get("greeting_notify")
         if not target:
             raise ServiceValidationError("No notify target given and none stored for the person")

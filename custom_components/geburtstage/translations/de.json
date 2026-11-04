@@ -87,7 +87,7 @@
       "description": "Sendet jetzt eine Gratulation. Ohne Nachricht wird ein zufälliger Text aus der Liste verwendet.",
       "fields": {
         "person": { "name": "Person", "description": "Vollständiger Name oder ID der Person." },
-        "message": { "name": "Nachricht", "description": "Eigener Text. Leer lassen für einen zufälligen Text aus der Liste." },
+        "message": { "name": "Nachricht", "description": "Eigener Text. Platzhalter in geschweiften Klammern (siehe README) werden ersetzt. Leer lassen für einen zufälligen Text aus der Liste." },
         "notify": { "name": "Benachrichtigungsziel", "description": "Überschreibt das gespeicherte Ziel." },
         "title": { "name": "Titel", "description": "Überschreibt den Titel der Benachrichtigung." }
       }

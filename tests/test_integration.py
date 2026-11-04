@@ -196,3 +196,42 @@ async def test_get_upcoming_response(hass: HomeAssistant) -> None:
         DOMAIN, "get_upcoming", {"days": 10}, blocking=True, return_response=True
     )
     assert [p["name"] for p in result["birthdays"]] == ["Ida"]
+
+
+async def test_event_contains_greeting_and_send_greeting_renders_placeholders(
+    hass: HomeAssistant,
+) -> None:
+    hass.config.language = "de"
+    entry = await _setup(hass)
+    calls = async_mock_service(hass, "notify", "hugo")
+    events = async_capture_events(hass, EVENT_BIRTHDAY)
+    await hass.services.async_call(
+        DOMAIN,
+        "add_person",
+        {
+            "first_name": "Hugo",
+            "last_name": "Testmann",
+            "salutation": "herr",
+            "birthdate": _born(0, year=2001),
+        },
+        blocking=True,
+    )
+    await entry.runtime_data.async_run_daily()
+    await hass.async_block_till_done()
+    assert events[0].data["greeting"] == "Lieber Hugo"
+    assert events[0].data["name"] == "Hugo Testmann"
+
+    result = await hass.services.async_call(
+        DOMAIN,
+        "send_greeting",
+        {
+            "person": "Hugo Testmann",
+            "notify": "notify.hugo",
+            "message": "{gruss}, alles Gute zum {alter}. Geburtstag!",
+        },
+        blocking=True,
+        return_response=True,
+    )
+    age = dt_util.now().date().year - 2001
+    assert calls[0].data["message"] == f"Lieber Hugo, alles Gute zum {age}. Geburtstag!"
+    assert result["message"] == calls[0].data["message"]

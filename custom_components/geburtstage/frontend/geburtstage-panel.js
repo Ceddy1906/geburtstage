@@ -68,7 +68,23 @@ const TEXTS = {
     s_texts_personal: "Gratulationstexte – persönlich",
     s_texts_formal: "Gratulationstexte – förmlich",
     s_texts_hint: "Ein Text pro Zeile, pro Gratulation wird zufällig einer gewählt.",
-    s_placeholders: "Platzhalter: {gruss} (Anrede + Name), {name}, {nachname}, {vollername}, {alter}, {wann}, {wird}, {datum}",
+    combo_placeholder: "Tippen zum Suchen …",
+    combo_filter_hint: "Ab 2 Buchstaben wird gefiltert · {n} Einträge",
+    combo_no_match: "Keine Treffer für „{q}“",
+    combo_clear: "Auswahl entfernen",
+    kind_service: "Dienst",
+    kind_entity: "Entität",
+    s_placeholders: "Welche Platzhalter es gibt, steht im Abschnitt „Platzhalter in den Texten“ weiter unten.",
+    ph_title: "Platzhalter in den Texten",
+    ph_intro: "Platzhalter stehen in geschweiften Klammern und werden beim Senden durch die Daten der Person ersetzt. Ein Klick auf einen Platzhalter fügt ihn an der Cursor-Position des zuletzt bearbeiteten Textfelds ein.",
+    ph_example: "Beispiel: „{gruss}, alles Gute zum {alter}. Geburtstag!“ wird zu „Lieber Max, alles Gute zum 40. Geburtstag!“.",
+    ph_age_note: "Ist das Geburtsjahr unbekannt, ist {alter} leer. Gratulationstexte mit {alter} werden dann nicht verwendet; es wird ein anderer Text aus der Liste gewählt.",
+    ph_col_ph: "Platzhalter",
+    ph_col_desc: "Wird ersetzt durch",
+    ph_col_example: "Beispiel",
+    ph_col_where: "Gilt für",
+    ph_where_both: "Gratulation und Erinnerung",
+    ph_where_reminder: "Erinnerung (in Gratulationen: „heute“)",
     s_reset: "Standard wiederherstellen",
     s_event_info:
       "Wer eigene Automationen nutzen möchte: Das Ereignis „Geburtstags-Ereignis“ liefert Name, Alter und den fertigen Text. Bei Personen ohne „automatisch senden“ wird nichts versendet.",
@@ -150,7 +166,23 @@ const TEXTS = {
     s_texts_personal: "Greeting texts – personal",
     s_texts_formal: "Greeting texts – formal",
     s_texts_hint: "One text per line; one is picked at random for every greeting.",
-    s_placeholders: "Placeholders: {greeting} (salutation + name), {first_name}, {last_name}, {full_name}, {age}, {age_ordinal}, {when}, {turning}, {date}",
+    combo_placeholder: "Type to search …",
+    combo_filter_hint: "Filtering starts after 2 letters · {n} entries",
+    combo_no_match: "No matches for “{q}”",
+    combo_clear: "Clear selection",
+    kind_service: "Service",
+    kind_entity: "Entity",
+    s_placeholders: "See the section “Placeholders in the texts” below for the available placeholders.",
+    ph_title: "Placeholders in the texts",
+    ph_intro: "Placeholders are written in curly braces and replaced with the person's data when the message is sent. Clicking a placeholder inserts it at the cursor position of the text field you edited last.",
+    ph_example: "Example: “{greeting}, happy {age_ordinal} birthday!” becomes “Dear Max, happy 40th birthday!”.",
+    ph_age_note: "If the year of birth is unknown, {age} is empty. Greeting texts containing {age} are then skipped and another text from the list is used.",
+    ph_col_ph: "Placeholder",
+    ph_col_desc: "Replaced by",
+    ph_col_example: "Example",
+    ph_col_where: "Applies to",
+    ph_where_both: "Greeting and reminder",
+    ph_where_reminder: "Reminder (in greetings: “today”)",
     s_reset: "Restore defaults",
     s_event_info:
       "For your own automations: the “Birthday event” entity delivers name, age and the finished text. Nothing is sent for people without “send automatically”.",
@@ -165,6 +197,34 @@ const TEXTS = {
       "Expected CSV columns: firstname, lastname, salutation, birthdate (DD.MM.YYYY, YYYY-MM-DD or --MM-DD). Imported people have no automatic greeting.",
     round: "round birthday",
   },
+};
+
+const PLACEHOLDERS = {
+  de: [
+    ["{gruss}", "Passende Begrüßung aus Anrede, Stil und Name", "Lieber Max · Liebe Anna · Sehr geehrter Herr Müller", "both"],
+    ["{name}", "Vorname", "Max", "both"],
+    ["{nachname}", "Nachname", "Müller", "both"],
+    ["{vollername}", "Vor- und Nachname", "Max Müller", "both"],
+    ["{alter}", "Alter, das die Person an diesem Geburtstag erreicht", "40", "both"],
+    ["{anrede}", "Anrede der Person (bei „Neutral“ leer)", "Herr · Frau", "both"],
+    ["{datum}", "Datum des Geburtstags", "04.11.", "both"],
+    ["{wann}", "Zeitpunkt des Geburtstags", "heute · morgen · übermorgen · in 3 Tagen", "reminder"],
+    ["{wird}", "„und wird“ + Alter (leer ohne Geburtsjahr)", "und wird 40", "reminder"],
+    ["{tage}", "Anzahl der Tage bis zum Geburtstag", "3", "reminder"],
+  ],
+  en: [
+    ["{greeting}", "Suitable greeting built from salutation, style and name", "Dear Max · Dear Mr. Smith", "both"],
+    ["{first_name}", "First name", "Max", "both"],
+    ["{last_name}", "Last name", "Smith", "both"],
+    ["{full_name}", "First and last name", "Max Smith", "both"],
+    ["{age}", "Age the person reaches on this birthday", "40", "both"],
+    ["{age_ordinal}", "Age as ordinal number", "40th", "both"],
+    ["{salutation}", "Salutation of the person (empty for “Neutral”)", "Mr. · Ms.", "both"],
+    ["{date}", "Date of the birthday", "11/04", "both"],
+    ["{when}", "When the birthday is", "today · tomorrow · in 3 days", "reminder"],
+    ["{turning}", "“(turning” + age + “)” (empty without year of birth)", "(turning 40)", "reminder"],
+    ["{days}", "Number of days until the birthday", "3", "reminder"],
+  ],
 };
 
 const STYLE = `
@@ -216,6 +276,21 @@ const STYLE = `
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--primary-text-color); color: var(--primary-background-color); padding: 10px 18px; border-radius: 8px; z-index: 20; font-size: 14px; }
   .toast.err { background: var(--error-color, #db4437); color: #fff; }
   .imp-table { max-height: 260px; overflow: auto; margin: 8px 0; font-size: 13px; }
+  .combo { position: relative; }
+  .combo input { padding-right: 34px; }
+  .combo-clear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: 0; background: none; cursor: pointer; color: var(--secondary-text-color); font-size: 14px; padding: 4px 6px; border-radius: 50%; }
+  .combo-clear:hover { background: var(--divider-color); }
+  .combo-list { position: fixed; z-index: 30; overflow-y: auto; background: var(--card-background-color); color: var(--primary-text-color); border: 1px solid var(--divider-color); border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,.35); }
+  .combo-item { padding: 7px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 1px; }
+  .combo-item.active, .combo-item:hover { background: color-mix(in srgb, var(--primary-color) 18%, transparent); }
+  .combo-item .ci-label { font-weight: 500; }
+  .combo-item .ci-value { font-size: 12px; color: var(--secondary-text-color); }
+  .combo-note { padding: 7px 12px; font-size: 12px; color: var(--secondary-text-color); border-bottom: 1px solid var(--divider-color); }
+  .combo-list mark { background: color-mix(in srgb, var(--primary-color) 35%, transparent); color: inherit; border-radius: 2px; }
+  .ph-table td { vertical-align: top; }
+  .ph-chip { font: inherit; font-family: ui-monospace, Consolas, monospace; font-size: 13px; cursor: pointer; border: 1px solid var(--divider-color); background: var(--secondary-background-color); color: var(--primary-color); border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
+  .ph-chip:hover { background: var(--primary-color); color: var(--text-primary-color, #fff); }
+  .ph-example { font-size: 13px; color: var(--secondary-text-color); }
   [hidden] { display: none !important; }
   @media (max-width: 720px) {
     .col-hide { display: none; }
@@ -445,16 +520,138 @@ class GeburtstagePanel extends HTMLElement {
   }
 
   // ---------------------------------------------------------------- edit dialog
-  _targetOptions(selected) {
-    const opts = [`<option value="">${esc(this.t("choose"))}</option>`];
-    let found = false;
-    for (const t of this._targets) {
-      const sel = t.value === selected;
-      if (sel) found = true;
-      opts.push(`<option value="${esc(t.value)}"${sel ? " selected" : ""}>${esc(t.label)} (${esc(t.value)})</option>`);
-    }
-    if (selected && !found) opts.push(`<option value="${esc(selected)}" selected>${esc(selected)}</option>`);
-    return opts.join("");
+  _targetDisplay(value) {
+    if (!value) return "";
+    const t = this._targets.find((x) => x.value === value);
+    return t ? `${t.label} (${t.value})` : value;
+  }
+
+  _comboHtml(id, value) {
+    return `<div class="combo" id="${id}" data-value="${esc(value || "")}">
+      <input type="text" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" placeholder="${esc(this.t("combo_placeholder"))}" value="${esc(this._targetDisplay(value))}">
+      <button type="button" class="combo-clear" title="${esc(this.t("combo_clear"))}"${value ? "" : " hidden"}>✕</button>
+    </div>`;
+  }
+
+  _comboValue(combo) {
+    return combo.dataset.value || "";
+  }
+
+  /** Searchable select: filters by substring once at least two characters were typed. */
+  _initCombo(combo) {
+    const input = combo.querySelector("input");
+    const clear = combo.querySelector(".combo-clear");
+    const list = document.createElement("div");
+    list.className = "combo-list";
+    list.hidden = true;
+    combo.appendChild(list);
+    let items = [];
+    let active = -1;
+    let edited = false;
+    const norm = (v) => String(v).toLowerCase().replace(/[_.\-]+/g, " ");
+    const onScroll = (ev) => { if (!list.contains(ev.target)) close(); };
+    const close = () => {
+      list.hidden = true;
+      active = -1;
+      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", close);
+    };
+    const place = () => {
+      const r = input.getBoundingClientRect();
+      const below = window.innerHeight - r.bottom - 12;
+      const above = r.top - 12;
+      const up = below < 180 && above > below;
+      list.style.left = `${r.left}px`;
+      list.style.width = `${r.width}px`;
+      list.style.maxHeight = `${Math.max(120, Math.min(300, up ? above : below))}px`;
+      if (up) { list.style.top = ""; list.style.bottom = `${window.innerHeight - r.top + 4}px`; }
+      else { list.style.bottom = ""; list.style.top = `${r.bottom + 4}px`; }
+    };
+    // Highlight every typed word inside a text.
+    const mark = (text, tokens) => {
+      if (!tokens.length) return esc(text);
+      const re = new RegExp(`(${tokens.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "gi");
+      return String(text).split(re).map((part, i) => (i % 2 ? `<mark>${esc(part)}</mark>` : esc(part))).join("");
+    };
+    const highlight = () => {
+      list.querySelectorAll(".combo-item").forEach((el, i) => el.classList.toggle("active", i === active));
+      const el = list.querySelector(".combo-item.active");
+      if (el) el.scrollIntoView({ block: "nearest" });
+    };
+    const render = () => {
+      const raw = input.value.trim();
+      const filtering = edited && raw.length >= 2;
+      // every typed word has to occur somewhere in label or id ("alexa k" finds "Alexa Media Kuchenalexa")
+      const tokens = norm(raw).split(/\s+/).filter(Boolean);
+      items = filtering
+        ? this._targets.filter((t) => {
+            const hay = norm(`${t.label} ${t.value}`);
+            return tokens.every((k) => hay.includes(k));
+          })
+        : this._targets;
+      const marks = filtering ? tokens : [];
+      let html = "";
+      if (!filtering) html += `<div class="combo-note">${esc(this.t("combo_filter_hint", { n: items.length }))}</div>`;
+      if (!items.length) html += `<div class="combo-note">${esc(this.t("combo_no_match", { q: raw }))}</div>`;
+      html += items.map((t, i) => `<div class="combo-item" data-i="${i}">
+          <span class="ci-label">${mark(t.label, marks)}</span>
+          <span class="ci-value">${mark(t.value, marks)} · ${esc(this.t(t.kind === "entity" ? "kind_entity" : "kind_service"))}</span></div>`).join("");
+      list.innerHTML = html;
+      active = filtering && items.length ? 0 : items.findIndex((t) => t.value === combo.dataset.value);
+      highlight();
+    };
+    const open = () => {
+      render();
+      place();
+      list.hidden = false;
+      window.addEventListener("scroll", onScroll, true);
+      window.addEventListener("resize", close);
+      highlight();
+    };
+    const choose = (value) => {
+      combo.dataset.value = value;
+      input.value = this._targetDisplay(value);
+      clear.hidden = !value;
+      edited = false;
+      close();
+    };
+    input.addEventListener("focus", () => { edited = false; input.select(); open(); });
+    input.addEventListener("click", () => { if (list.hidden) { edited = false; open(); } });
+    input.addEventListener("input", () => { edited = true; open(); });
+    input.addEventListener("keydown", (ev) => {
+      if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+        ev.preventDefault();
+        if (list.hidden) { open(); return; }
+        if (!items.length) return;
+        active = (active + (ev.key === "ArrowDown" ? 1 : -1) + items.length) % items.length;
+        highlight();
+      } else if (ev.key === "Enter") {
+        if (!list.hidden) {
+          ev.preventDefault();
+          if (items[active]) choose(items[active].value);
+        }
+      } else if (ev.key === "Escape") {
+        if (!list.hidden) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          close();
+          input.value = this._targetDisplay(combo.dataset.value);
+        }
+      } else if (ev.key === "Tab") {
+        close();
+      }
+    });
+    input.addEventListener("blur", () => {
+      close();
+      input.value = this._targetDisplay(combo.dataset.value);
+      edited = false;
+    });
+    list.addEventListener("mousedown", (ev) => {
+      ev.preventDefault(); // keep focus in the input so blur does not fire first
+      const item = ev.target.closest(".combo-item");
+      if (item) choose(items[Number(item.dataset.i)].value);
+    });
+    clear.addEventListener("mousedown", (ev) => { ev.preventDefault(); choose(""); });
   }
 
   _openDialog(person) {
@@ -488,7 +685,7 @@ class GeburtstagePanel extends HTMLElement {
         <div class="field"><label>${esc(this.t("birthdate"))} *</label><input id="f_date" type="date" value="${esc(p.birthdate)}" required></div>
         <label class="check"><input id="f_noyear" type="checkbox"${p.year_known ? "" : " checked"}> ${esc(this.t("year_unknown"))}</label>
         <label class="check"><input id="f_greet" type="checkbox"${p.greeting_enabled ? " checked" : ""}> ${esc(this.t("greeting_enabled"))}</label>
-        <div class="field" id="f_notify_wrap"><label>${esc(this.t("greeting_notify"))}</label><select id="f_notify">${this._targetOptions(p.greeting_notify)}</select></div>
+        <div class="field" id="f_notify_wrap"><label>${esc(this.t("greeting_notify"))}</label>${this._comboHtml("f_notify", p.greeting_notify)}</div>
         <div class="row">
           <div class="field"><label>${esc(this.t("reminder_1"))}</label><input id="f_r1" type="number" min="1" max="60" value="${p.reminder_days_1 ?? ""}"><div class="hint">${esc(this.t("reminder_hint"))}</div></div>
           <div class="field"><label>${esc(this.t("reminder_2"))}</label><input id="f_r2" type="number" min="1" max="60" value="${p.reminder_days_2 ?? ""}"></div>
@@ -504,6 +701,7 @@ class GeburtstagePanel extends HTMLElement {
         <button type="submit" class="btn primary" id="b_save">${esc(this.t("save"))}</button>
       </div></form>`;
     const $ = (id) => dlg.querySelector(`#${id}`);
+    this._initCombo(dlg.querySelector("#f_notify"));
     const syncNotify = () => { $("f_notify_wrap").hidden = !$("f_greet").checked; };
     $("f_greet").addEventListener("change", syncNotify);
     syncNotify();
@@ -525,7 +723,7 @@ class GeburtstagePanel extends HTMLElement {
       birthdate: $("f_date").value,
       year_known: !$("f_noyear").checked,
       greeting_enabled: $("f_greet").checked,
-      greeting_notify: $("f_notify").value,
+      greeting_notify: this._comboValue($("f_notify")),
       reminder_days_1: num($("f_r1").value),
       reminder_days_2: num($("f_r2").value),
     };
@@ -595,7 +793,7 @@ class GeburtstagePanel extends HTMLElement {
         <h2>${esc(this.t("s_general"))}</h2>
         <div class="row">
           <div class="field"><label>${esc(this.t("s_send_time"))}</label><input id="s_time" type="time" step="60" value="${esc(s.send_time.slice(0, 5))}"></div>
-          <div class="field"><label>${esc(this.t("s_reminder_notify"))}</label><select id="s_rnotify">${this._targetOptions(s.reminder_notify)}</select></div>
+          <div class="field"><label>${esc(this.t("s_reminder_notify"))}</label>${this._comboHtml("s_rnotify", s.reminder_notify)}</div>
         </div>
         <label class="check"><input id="s_auto" type="checkbox"${s.auto_reminders ? " checked" : ""}> ${esc(this.t("s_auto_reminders"))}</label>
         <div class="row">
@@ -605,6 +803,7 @@ class GeburtstagePanel extends HTMLElement {
         <div class="field"><label>${esc(this.t("s_reminder_template"))}</label><input id="s_rtemplate" value="${esc(s.reminder_template)}"></div>
         <div class="hint">${esc(this.t("s_placeholders"))}</div>
       </div>
+      ${this._placeholderCard()}
       <div class="card">
         <h2>${esc(this.t("s_texts_personal"))}</h2>
         <textarea id="s_tp">${esc(s.texts_personal.join("\n"))}</textarea>
@@ -619,8 +818,48 @@ class GeburtstagePanel extends HTMLElement {
           <button class="btn primary" id="s_save">${esc(this.t("save"))}</button>
         </div>
       </div>`;
+    this._initCombo(el.querySelector("#s_rnotify"));
+    this._lastField = null;
+    el.addEventListener("focusin", (ev) => {
+      if (ev.target.matches("textarea, #s_rtemplate")) this._lastField = ev.target;
+    });
+    el.querySelectorAll(".ph-chip").forEach((chip) => {
+      chip.addEventListener("mousedown", (ev) => ev.preventDefault());
+      chip.addEventListener("click", () => this._insertPlaceholder(el, chip.dataset.ph));
+    });
     el.querySelector("#s_save").addEventListener("click", () => this._saveSettings(false));
     el.querySelector("#s_reset").addEventListener("click", () => this._saveSettings(true));
+  }
+
+  _placeholderCard() {
+    const rows = (PLACEHOLDERS[this._lang] || PLACEHOLDERS.en)
+      .map(([ph, desc, example, where]) => `<tr>
+        <td><button type="button" class="ph-chip" data-ph="${esc(ph)}">${esc(ph)}</button></td>
+        <td>${esc(desc)}</td>
+        <td class="ph-example">${esc(example)}</td>
+        <td class="ph-example col-hide">${esc(this.t(where === "both" ? "ph_where_both" : "ph_where_reminder"))}</td></tr>`)
+      .join("");
+    return `<div class="card">
+      <h2>${esc(this.t("ph_title"))}</h2>
+      <p class="hint" style="margin-top:0">${esc(this.t("ph_intro"))}</p>
+      <p class="hint"><b>${esc(this.t("ph_example"))}</b></p>
+      <table class="ph-table"><thead><tr>
+        <th class="nosort">${esc(this.t("ph_col_ph"))}</th><th class="nosort">${esc(this.t("ph_col_desc"))}</th>
+        <th class="nosort">${esc(this.t("ph_col_example"))}</th><th class="nosort col-hide">${esc(this.t("ph_col_where"))}</th></tr></thead>
+        <tbody>${rows}</tbody></table>
+      <p class="hint">${esc(this.t("ph_age_note"))}</p>
+    </div>`;
+  }
+
+  _insertPlaceholder(root, text) {
+    const field = this._lastField && root.contains(this._lastField) ? this._lastField : root.querySelector("#s_tp");
+    const start = field.selectionStart ?? field.value.length;
+    const end = field.selectionEnd ?? start;
+    field.value = field.value.slice(0, start) + text + field.value.slice(end);
+    const pos = start + text.length;
+    field.focus();
+    field.setSelectionRange(pos, pos);
+    field.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
   async _saveSettings(reset) {
@@ -628,7 +867,7 @@ class GeburtstagePanel extends HTMLElement {
     const lines = (id) => el.querySelector(id).value.split("\n").map((l) => l.trim()).filter(Boolean);
     const settings = {
       send_time: `${el.querySelector("#s_time").value || "08:00"}:00`,
-      reminder_notify: el.querySelector("#s_rnotify").value,
+      reminder_notify: this._comboValue(el.querySelector("#s_rnotify")),
       auto_reminders: el.querySelector("#s_auto").checked,
       greeting_title: el.querySelector("#s_gtitle").value.trim(),
       reminder_title: el.querySelector("#s_rtitle").value.trim(),

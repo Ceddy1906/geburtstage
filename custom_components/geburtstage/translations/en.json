@@ -87,7 +87,7 @@
       "description": "Sends a congratulation now. Without a message a random text is used.",
       "fields": {
         "person": { "name": "Person", "description": "Full name or ID of the person." },
-        "message": { "name": "Message", "description": "Own text. Leave empty to use a random text from the list." },
+        "message": { "name": "Message", "description": "Own text. Placeholders in curly braces (see README) are replaced. Leave empty to use a random text from the list." },
         "notify": { "name": "Notify target", "description": "Overrides the stored notify target." },
         "title": { "name": "Title", "description": "Overrides the notification title." }
       }
