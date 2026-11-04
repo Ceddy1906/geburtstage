@@ -437,3 +437,7 @@ Other services: `geburtstage.add_person`, `geburtstage.update_person`, `geburtst
 - **Time window:** in the settings you find “Time … (from)” and an optional “Time window until”. Without “until” all messages are sent exactly at the configured time (default 08:00). With “until” **every message is sent at a random time** inside the window, e.g. 08:00–11:00, which feels less automatic. The time is fixed per person and day and does not change after a restart. The event for your own automations fires at the same moment. The window must end on the same day.
 - Data is stored locally in `.storage/geburtstage.data` and included in your Home Assistant backups.
 - Greetings and reminders are sent daily at the configured time; after a restart missed ones are caught up, but never sent twice.
+
+---
+
+Lizenz / License: [MIT](LICENSE)
