@@ -100,6 +100,17 @@ _AGE_PLACEHOLDERS = ("{alter}", "{age}", "{age_ordinal}")
 _PLACEHOLDER = re.compile(r"\{(\w+)\}")
 
 
+def random_offset(key: str, day: date, window_seconds: int) -> int:
+    """Return a reproducible random second offset (0..window) for a message on a day.
+
+    The value only depends on ``key`` and ``day`` so that a restart of Home Assistant
+    does not move the planned send time.
+    """
+    if window_seconds <= 0:
+        return 0
+    return random.Random(f"{key}|{day.isoformat()}").randint(0, window_seconds)
+
+
 def norm_lang(language: str | None) -> str:
     """Return 'de' for German locales, otherwise 'en'."""
     return "de" if (language or "").lower().startswith("de") else "en"

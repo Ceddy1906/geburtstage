@@ -15,6 +15,7 @@ from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import (
     MockConfigEntry,
     async_capture_events,
+    async_fire_time_changed,
     async_mock_service,
 )
 
@@ -32,6 +33,9 @@ async def _setup(hass: HomeAssistant) -> MockConfigEntry:
         assert await async_setup_component(hass, DOMAIN, {})
         await hass.async_block_till_done()
     assert entry.state is ConfigEntryState.LOADED
+    # Send time 00:00 so that "now" is always after it, whatever time the tests run at.
+    entry.runtime_data.async_set_settings({"send_time": "00:00:00"})
+    await hass.async_block_till_done()
     return entry
 
 
@@ -235,3 +239,64 @@ async def test_event_contains_greeting_and_send_greeting_renders_placeholders(
     age = dt_util.now().date().year - 2001
     assert calls[0].data["message"] == f"Lieber Hugo, alles Gute zum {age}. Geburtstag!"
     assert result["message"] == calls[0].data["message"]
+
+
+async def test_random_time_window_plans_message_and_sends_it_once(
+    hass: HomeAssistant, freezer
+) -> None:
+    await hass.config.async_set_time_zone("UTC")
+    freezer.move_to("2026-11-04 01:30:00+00:00")
+    entry = await _setup(hass)
+    manager = entry.runtime_data
+    manager.async_set_settings({"send_time": "01:00:00", "send_time_end": "23:00:00"})
+    await hass.async_block_till_done()
+    calls = async_mock_service(hass, "notify", "window_target")
+
+    # pick a person id whose reproducible random moment lies well after "now"
+    now = dt_util.now()
+    pid = next(
+        c for c in ("a", "b", "c", "d", "e", "f")
+        if manager._send_moment(f"greet:{c}", manager.today) > now + timedelta(hours=1)
+    )
+    manager.async_upsert_person(
+        {
+            "id": pid,
+            "first_name": "Zufall",
+            "birthdate": _born(0),
+            "greeting_enabled": True,
+            "greeting_notify": "notify.window_target",
+        }
+    )
+    when = manager._send_moment(f"greet:{pid}", manager.today)
+    assert manager._send_moment(f"greet:{pid}", manager.today) == when  # reproducible
+
+    await manager.async_run_daily()
+    await hass.async_block_till_done()
+    assert not calls and f"greet:{pid}" in manager._pending  # planned, not sent yet
+
+    await manager.async_run_daily()  # running again must not plan twice
+    assert len(manager._pending) == 1
+
+    later = when + timedelta(seconds=1)
+    freezer.move_to(later)
+    async_fire_time_changed(hass, later)
+    await hass.async_block_till_done()
+    assert len(calls) == 1 and "Zufall" in calls[0].data["message"]
+    assert not manager._pending
+
+    await manager.async_run_daily()  # nothing is sent a second time
+    await hass.async_block_till_done()
+    assert len(calls) == 1
+
+
+async def test_time_window_validation(hass: HomeAssistant) -> None:
+    entry = await _setup(hass)
+    manager = entry.runtime_data
+    with pytest.raises(ValueError):
+        manager.async_set_settings({"send_time": "10:00:00", "send_time_end": "09:00:00"})
+    with pytest.raises(ValueError):
+        manager.async_set_settings({"send_time": "10:00:00", "send_time_end": "10:00:00"})
+    manager.async_set_settings({"send_time": "10:00:00", "send_time_end": "11:30:00"})
+    assert manager.settings["send_time_end"] == "11:30:00"
+    manager.async_set_settings({"send_time_end": ""})  # empty = exact time again
+    assert manager.settings["send_time_end"] == ""

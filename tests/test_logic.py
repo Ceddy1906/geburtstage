@@ -135,3 +135,13 @@ def test_english_ordinals():
     assert [logic.ordinal_en(n) for n in (1, 2, 3, 4, 11, 12, 13, 21, 22, 40)] == [
         "1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd", "40th",
     ]
+
+
+def test_random_offset_is_reproducible_and_within_window():
+    from datetime import date as d
+
+    values = {logic.random_offset(f"greet:{i}", d(2026, 11, 4), 3600) for i in range(50)}
+    assert all(0 <= v <= 3600 for v in values)
+    assert len(values) > 10  # spread over the window
+    assert logic.random_offset("greet:x", d(2026, 11, 4), 3600) == logic.random_offset("greet:x", d(2026, 11, 4), 3600)
+    assert logic.random_offset("greet:x", d(2026, 11, 4), 0) == 0

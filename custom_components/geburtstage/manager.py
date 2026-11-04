@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any
 
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.event import async_track_time_change
+from homeassistant.helpers.event import async_track_point_in_time, async_track_time_change
 from homeassistant.helpers.start import async_at_started
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
@@ -37,6 +37,7 @@ from .logic import (
     describe,
     greeting_for,
     norm_lang,
+    random_offset,
     sort_key,
 )
 
@@ -47,6 +48,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_SETTINGS: dict[str, Any] = {
     "send_time": "08:00:00",
+    "send_time_end": "",
     "reminder_notify": "",
     "auto_reminders": True,
     "greeting_title": "",
@@ -159,6 +161,16 @@ def normalize_settings(data: dict[str, Any], base: dict[str, Any]) -> dict[str, 
         send_time = _parse_time(merged.get("send_time") or "08:00:00")
     except (TypeError, ValueError) as err:
         raise ValueError("send_time must be HH:MM[:SS]") from err
+    end_raw = merged.get("send_time_end") or ""
+    send_time_end = ""
+    if end_raw:
+        try:
+            end_time = _parse_time(end_raw)
+        except (TypeError, ValueError) as err:
+            raise ValueError("send_time_end must be HH:MM[:SS]") from err
+        if end_time <= send_time:
+            raise ValueError("send_time_end must be later than send_time")
+        send_time_end = end_time.strftime("%H:%M:%S")
 
     def _texts(key: str) -> list[str] | None:
         value = merged.get(key)
@@ -175,6 +187,7 @@ def normalize_settings(data: dict[str, Any], base: dict[str, Any]) -> dict[str, 
     template = str(template).strip() if template else None
     return {
         "send_time": send_time.strftime("%H:%M:%S"),
+        "send_time_end": send_time_end,
         "reminder_notify": _clean_str(merged.get("reminder_notify"), "reminder_notify", 200),
         "auto_reminders": bool(merged.get("auto_reminders", True)),
         "greeting_title": _clean_str(merged.get("greeting_title"), "greeting_title", 100),
@@ -198,6 +211,7 @@ class GeburtstageManager:
         self._listeners: list[CALLBACK_TYPE] = []
         self._unsubs: list[CALLBACK_TYPE] = []
         self._daily_unsub: CALLBACK_TYPE | None = None
+        self._pending: dict[str, CALLBACK_TYPE] = {}
         self._rng = random.Random()
 
     # ------------------------------------------------------------------ #
@@ -385,9 +399,17 @@ class GeburtstageManager:
         for kind in ("greeting", "reminder"):
             if settings[f"{kind}_title"] == DEFAULT_TITLES[lang][kind]:
                 settings[f"{kind}_title"] = ""
+        timing_changed = (settings["send_time"], settings["send_time_end"]) != (
+            self.settings["send_time"],
+            self.settings["send_time_end"],
+        )
         self.settings = settings
         self._save()
-        self._schedule_daily()
+        if timing_changed:
+            self._cancel_pending()
+            self._schedule_daily()
+            if dt_util.now().time() >= _parse_time(settings["send_time"]):
+                self.hass.async_create_task(self.async_run_daily())
         self._notify_listeners()
 
     # ------------------------------------------------------------------ #
@@ -477,9 +499,17 @@ class GeburtstageManager:
         if self._daily_unsub:
             self._daily_unsub()
             self._daily_unsub = None
+        self._cancel_pending()
         for unsub in self._unsubs:
             unsub()
         self._unsubs.clear()
+
+    @callback
+    def _cancel_pending(self) -> None:
+        """Cancel timers of messages that are planned for later today."""
+        for unsub in self._pending.values():
+            unsub()
+        self._pending.clear()
 
     @callback
     def _schedule_daily(self) -> None:
@@ -505,20 +535,72 @@ class GeburtstageManager:
     async def _async_scheduled(self, _now: datetime) -> None:
         await self.async_run_daily()
 
+    def _send_moment(self, key: str, today: date) -> datetime:
+        """Return when a message is sent today: the start time or a random time in the window."""
+        tz = dt_util.get_default_time_zone()
+        start = datetime.combine(today, _parse_time(self.settings["send_time"]), tzinfo=tz)
+        end_raw = self.settings.get("send_time_end")
+        window = 0
+        if end_raw:
+            end = datetime.combine(today, _parse_time(end_raw), tzinfo=tz)
+            window = int((end - start).total_seconds())
+        return start + timedelta(seconds=random_offset(key, today, window))
+
     async def async_run_daily(self) -> None:
-        """Send congratulations and reminders that are due today (idempotent)."""
+        """Send what is due now and plan what is due later today (idempotent)."""
         today = self.today
+        now = dt_util.now()
         for person in list(self.persons.values()):
             desc = describe(person, today)
             if desc["days_until"] == 0:
-                await self._async_handle_birthday(person, desc, today)
+                await self._async_dispatch("greet", person["id"], 0, today.isoformat(), today, now)
             for days in desc["reminder_days"]:
                 if desc["days_until"] == days:
-                    await self._async_handle_reminder(person, desc, days, today)
+                    await self._async_dispatch("rem", person["id"], days, desc["next_date"], today, now)
         cutoff = today - timedelta(days=2)
         self.sent = {
             key: value for key, value in self.sent.items() if date.fromisoformat(value) >= cutoff
         }
+        self._save()
+        self._notify_listeners()
+
+    async def _async_dispatch(
+        self, kind: str, pid: str, days: int, marker: str, today: date, now: datetime
+    ) -> None:
+        """Send an item now if its moment has come, otherwise plan a timer for it."""
+        key = f"greet:{pid}" if kind == "greet" else f"rem:{days}:{pid}"
+        if self.sent.get(key) == marker:
+            return
+        when = self._send_moment(key, today)
+        if when <= now:
+            if unsub := self._pending.pop(key, None):
+                unsub()
+            await self._async_fire_item(kind, pid, days)
+            return
+        if key in self._pending:
+            return
+
+        async def _fire(_now: datetime) -> None:
+            self._pending.pop(key, None)
+            await self._async_fire_item(kind, pid, days)
+
+        self._pending[key] = async_track_point_in_time(self.hass, _fire, when)
+
+    async def _async_fire_item(self, kind: str, pid: str, days: int) -> None:
+        """Send one item after re-checking that it is still due (person may have changed)."""
+        person = self.persons.get(pid)
+        if person is None:
+            return
+        today = self.today
+        desc = describe(person, today)
+        if kind == "greet":
+            if desc["days_until"] != 0:
+                return
+            await self._async_handle_birthday(person, desc, today)
+        else:
+            if desc["days_until"] != days or days not in desc["reminder_days"]:
+                return
+            await self._async_handle_reminder(person, desc, days, today)
         self._save()
         self._notify_listeners()
 

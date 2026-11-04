@@ -61,7 +61,10 @@ const TEXTS = {
     err_send_failed: "Senden über {target} ist fehlgeschlagen. Existiert der Dienst noch? Details im HA-Protokoll.",
     error: "Fehler",
     s_general: "Allgemein",
-    s_send_time: "Uhrzeit für Gratulationen und Erinnerungen",
+    s_send_time: "Uhrzeit für Gratulationen und Erinnerungen (ab)",
+    s_send_time_end: "Zeitfenster bis (optional)",
+    err_window: "Das Zeitfenster muss nach der Startzeit enden (am selben Tag).",
+    s_window_hint: "Leer = alle Nachrichten gehen genau zur Uhrzeit links raus. Mit „bis“ wird jede Nachricht zu einer zufälligen Uhrzeit zwischen beiden Zeiten gesendet – wirkt weniger automatisch.",
     s_reminder_notify: "Erinnerungen und Testnachrichten senden an",
     s_auto_reminders: "Erinnerungen automatisch senden",
     s_titles: "Titel der Nachrichten",
@@ -162,7 +165,10 @@ const TEXTS = {
     err_send_failed: "Sending via {target} failed. Does the service still exist? See the HA log for details.",
     error: "Error",
     s_general: "General",
-    s_send_time: "Time for greetings and reminders",
+    s_send_time: "Time for greetings and reminders (from)",
+    s_send_time_end: "Time window until (optional)",
+    err_window: "The time window must end after the start time (on the same day).",
+    s_window_hint: "Empty = all messages are sent exactly at the time on the left. With “until” every message is sent at a random time between both times, which feels less automatic.",
     s_reminder_notify: "Send reminders and test messages to",
     s_auto_reminders: "Send reminders automatically",
     s_titles: "Message titles",
@@ -750,6 +756,7 @@ class GeburtstagePanel extends HTMLElement {
 
   _errorText(err) {
     if (err && err.code === "no_target") return this.t("err_no_target");
+    if (String((err && err.message) || "").includes("send_time_end must be later")) return this.t("err_window");
     if (err && err.code === "send_failed") {
       const m = String(err.message || "").match(/via (\S+) failed/);
       return this.t("err_send_failed", { target: m ? m[1] : "" });
@@ -808,6 +815,9 @@ class GeburtstagePanel extends HTMLElement {
         <h2>${esc(this.t("s_general"))}</h2>
         <div class="row">
           <div class="field"><label>${esc(this.t("s_send_time"))}</label><input id="s_time" type="time" step="60" value="${esc(s.send_time.slice(0, 5))}"></div>
+          <div class="field"><label>${esc(this.t("s_send_time_end"))}</label><input id="s_time_end" type="time" step="60" value="${esc((s.send_time_end || "").slice(0, 5))}"><div class="hint">${esc(this.t("s_window_hint"))}</div></div>
+        </div>
+        <div class="row">
           <div class="field"><label>${esc(this.t("s_reminder_notify"))}</label>${this._comboHtml("s_rnotify", s.reminder_notify)}</div>
         </div>
         <label class="check"><input id="s_auto" type="checkbox"${s.auto_reminders ? " checked" : ""}> ${esc(this.t("s_auto_reminders"))}</label>
@@ -882,6 +892,7 @@ class GeburtstagePanel extends HTMLElement {
     const lines = (id) => el.querySelector(id).value.split("\n").map((l) => l.trim()).filter(Boolean);
     const settings = {
       send_time: `${el.querySelector("#s_time").value || "08:00"}:00`,
+      send_time_end: el.querySelector("#s_time_end").value ? `${el.querySelector("#s_time_end").value}:00` : "",
       reminder_notify: this._comboValue(el.querySelector("#s_rnotify")),
       auto_reminders: el.querySelector("#s_auto").checked,
       greeting_title: el.querySelector("#s_gtitle").value.trim(),
@@ -903,7 +914,7 @@ class GeburtstagePanel extends HTMLElement {
       this._renderSettings();
       this._toast(this.t("saved"));
     } catch (err) {
-      this._toast(`${this.t("error")}: ${err.message || err}`, true);
+      this._toast(this._errorText(err), true);
     }
   }
 

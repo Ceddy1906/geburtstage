@@ -256,6 +256,7 @@ Jeder Eintrag in `upcoming.birthdays` enthält `name`, `first_name`, `last_name`
 
 ### Hinweise
 
+- **Zeitfenster:** Unter *Einstellungen* gibt es „Uhrzeit … (ab)“ und optional „Zeitfenster bis“. Ohne „bis“ gehen alle Nachrichten genau zur eingestellten Uhrzeit raus (Standard 08:00). Mit „bis“ wird **jede Nachricht zu einer zufälligen Uhrzeit** in diesem Fenster gesendet, z. B. 08:00–11:00; das wirkt weniger automatisch. Die Zeit ist pro Person und Tag festgelegt und ändert sich auch nach einem Neustart nicht. Das Ereignis für eigene Automationen wird zum selben Zeitpunkt ausgelöst. Das Fenster muss am selben Tag enden.
 - Die Daten liegen lokal in `.storage/geburtstage.data` und sind Teil deiner Home-Assistant-Backups.
 - Gratulationen und Erinnerungen werden täglich zur eingestellten Uhrzeit versandt; nach einem Neustart wird nachgeholt, aber nie doppelt gesendet.
 
@@ -433,5 +434,6 @@ Other services: `geburtstage.add_person`, `geburtstage.update_person`, `geburtst
 
 ### Notes
 
+- **Time window:** in the settings you find “Time … (from)” and an optional “Time window until”. Without “until” all messages are sent exactly at the configured time (default 08:00). With “until” **every message is sent at a random time** inside the window, e.g. 08:00–11:00, which feels less automatic. The time is fixed per person and day and does not change after a restart. The event for your own automations fires at the same moment. The window must end on the same day.
 - Data is stored locally in `.storage/geburtstage.data` and included in your Home Assistant backups.
 - Greetings and reminders are sent daily at the configured time; after a restart missed ones are caught up, but never sent twice.

@@ -1,5 +1,23 @@
 # Änderungen / Changelog
 
+## [0.3.0] – 2026-11-04
+
+### Neu
+- **Zeitfenster mit zufälliger Sendezeit:** In den Einstellungen gibt es neben der Uhrzeit (jetzt „ab“) das optionale Feld „Zeitfenster bis“. Ist es gesetzt, wird jede Gratulation und jede Erinnerung zu einer zufälligen Uhrzeit in diesem Fenster gesendet (z. B. 08:00–11:30) – das wirkt weniger automatisch. Die Zeit ist pro Person und Tag festgelegt und bleibt auch nach einem Neustart gleich; das Ereignis für eigene Automationen wird zum selben Zeitpunkt ausgelöst. Ohne „bis“ ändert sich nichts: Alles geht genau zur eingestellten Uhrzeit raus.
+- Verständliche Fehlermeldung, wenn das Zeitfenster nicht nach der Startzeit endet (es muss am selben Tag enden).
+
+### Hinweis zum Update
+Nach dem Update den Browser mit **Strg + F5** neu laden.
+
+---
+
+### New
+- **Time window with random send time:** next to the time (now “from”) the settings have the optional field “Time window until”. If set, every greeting and every reminder is sent at a random time inside that window (e.g. 08:00–11:30), which feels less automatic. The time is fixed per person and day and stays the same after a restart; the event for your own automations fires at the same moment. Without “until” nothing changes: everything is sent exactly at the configured time.
+- Clear error message if the window does not end after the start time (it has to end on the same day).
+
+### Update note
+After updating, reload the browser with **Ctrl + F5**.
+
 ## [0.2.1] – 2026-11-04
 
 ### Korrigiert
