@@ -42,24 +42,27 @@ const TEXTS = {
     birthdate: "Geburtsdatum",
     year_unknown: "Geburtsjahr unbekannt (kein Alter)",
     greeting_enabled: "Gratulation automatisch senden",
-    greeting_notify: "Benachrichtigung über",
+    greeting_notify: "Gratulation senden an",
+    greeting_notify_hint: "Empfänger der Gratulation. Wird nur verwendet, wenn „Gratulation automatisch senden“ angehakt ist.",
     choose: "– bitte wählen –",
     reminder_1: "Erinnerung 1 (Tage vorher)",
     reminder_2: "Erinnerung 2 (Tage vorher)",
     reminder_hint: "leer = keine Erinnerung",
     preview: "Vorschau",
-    send_test: "Test senden",
+    send_test: "Test an mich senden",
     cancel: "Abbrechen",
     save: "Speichern",
     close: "Schließen",
     saved: "Gespeichert",
     deleted: "Gelöscht",
     confirm_delete: "„{name}“ wirklich löschen?",
-    test_sent: "Testnachricht gesendet",
+    test_sent: "Testnachricht an {target} gesendet (nicht an die Person)",
+    err_no_target: "Testnachrichten gehen nie an die Person, sondern an dein eigenes Ziel. Lege es in den Einstellungen unter „Erinnerungen und Testnachrichten senden an“ fest.",
+    err_send_failed: "Senden über {target} ist fehlgeschlagen. Existiert der Dienst noch? Details im HA-Protokoll.",
     error: "Fehler",
     s_general: "Allgemein",
     s_send_time: "Uhrzeit für Gratulationen und Erinnerungen",
-    s_reminder_notify: "Erinnerungen senden an",
+    s_reminder_notify: "Erinnerungen und Testnachrichten senden an",
     s_auto_reminders: "Erinnerungen automatisch senden",
     s_titles: "Titel der Nachrichten",
     s_greeting_title: "Titel Gratulation",
@@ -140,24 +143,27 @@ const TEXTS = {
     birthdate: "Date of birth",
     year_unknown: "Year of birth unknown (no age)",
     greeting_enabled: "Send greeting automatically",
-    greeting_notify: "Notify via",
+    greeting_notify: "Send greeting to",
+    greeting_notify_hint: "Recipient of the greeting. Only used when “Send greeting automatically” is ticked.",
     choose: "– please choose –",
     reminder_1: "Reminder 1 (days before)",
     reminder_2: "Reminder 2 (days before)",
     reminder_hint: "empty = no reminder",
     preview: "Preview",
-    send_test: "Send test",
+    send_test: "Send test to me",
     cancel: "Cancel",
     save: "Save",
     close: "Close",
     saved: "Saved",
     deleted: "Deleted",
     confirm_delete: "Really delete “{name}”?",
-    test_sent: "Test message sent",
+    test_sent: "Test message sent to {target} (not to the person)",
+    err_no_target: "Test messages never go to the person but to your own target. Set it in the settings under “Send reminders and test messages to”.",
+    err_send_failed: "Sending via {target} failed. Does the service still exist? See the HA log for details.",
     error: "Error",
     s_general: "General",
     s_send_time: "Time for greetings and reminders",
-    s_reminder_notify: "Send reminders to",
+    s_reminder_notify: "Send reminders and test messages to",
     s_auto_reminders: "Send reminders automatically",
     s_titles: "Message titles",
     s_greeting_title: "Greeting title",
@@ -685,7 +691,7 @@ class GeburtstagePanel extends HTMLElement {
         <div class="field"><label>${esc(this.t("birthdate"))} *</label><input id="f_date" type="date" value="${esc(p.birthdate)}" required></div>
         <label class="check"><input id="f_noyear" type="checkbox"${p.year_known ? "" : " checked"}> ${esc(this.t("year_unknown"))}</label>
         <label class="check"><input id="f_greet" type="checkbox"${p.greeting_enabled ? " checked" : ""}> ${esc(this.t("greeting_enabled"))}</label>
-        <div class="field" id="f_notify_wrap"><label>${esc(this.t("greeting_notify"))}</label>${this._comboHtml("f_notify", p.greeting_notify)}</div>
+        <div class="field" id="f_notify_wrap"><label>${esc(this.t("greeting_notify"))}</label>${this._comboHtml("f_notify", p.greeting_notify)}<div class="hint">${esc(this.t("greeting_notify_hint"))}</div></div>
         <div class="row">
           <div class="field"><label>${esc(this.t("reminder_1"))}</label><input id="f_r1" type="number" min="1" max="60" value="${p.reminder_days_1 ?? ""}"><div class="hint">${esc(this.t("reminder_hint"))}</div></div>
           <div class="field"><label>${esc(this.t("reminder_2"))}</label><input id="f_r2" type="number" min="1" max="60" value="${p.reminder_days_2 ?? ""}"></div>
@@ -702,7 +708,7 @@ class GeburtstagePanel extends HTMLElement {
       </div></form>`;
     const $ = (id) => dlg.querySelector(`#${id}`);
     this._initCombo(dlg.querySelector("#f_notify"));
-    const syncNotify = () => { $("f_notify_wrap").hidden = !$("f_greet").checked; };
+    const syncNotify = () => { $("f_notify_wrap").style.opacity = $("f_greet").checked ? "1" : "0.6"; };
     $("f_greet").addEventListener("change", syncNotify);
     syncNotify();
     $("b_cancel").addEventListener("click", () => dlg.close());
@@ -742,12 +748,21 @@ class GeburtstagePanel extends HTMLElement {
     }
   }
 
+  _errorText(err) {
+    if (err && err.code === "no_target") return this.t("err_no_target");
+    if (err && err.code === "send_failed") {
+      const m = String(err.message || "").match(/via (\S+) failed/);
+      return this.t("err_send_failed", { target: m ? m[1] : "" });
+    }
+    return `${this.t("error")}: ${err.message || err}`;
+  }
+
   async _sendTest(dlg) {
     try {
-      await this._hass.callWS({ type: "geburtstage/send_test", person: this._readForm(dlg) });
-      this._toast(this.t("test_sent"));
+      const res = await this._hass.callWS({ type: "geburtstage/send_test", person: this._readForm(dlg) });
+      this._toast(this.t("test_sent", { target: res.notify }));
     } catch (err) {
-      this._toast(`${this.t("error")}: ${err.message || err}`, true);
+      this._toast(this._errorText(err), true);
     }
   }
 

@@ -1,5 +1,23 @@
 # Änderungen / Changelog
 
+## [0.2.1] – 2026-11-04
+
+### Korrigiert
+- **„Test senden“ ging an die Person bzw. fand kein Ziel.** Testnachrichten gehen jetzt immer an dein eigenes Ziel aus den Einstellungen („Erinnerungen und Testnachrichten senden an“) – nie an die Person. Der Button heißt „Test an mich senden“, die Nachricht beginnt mit „[Test für Vorname]“, und die Rückmeldung nennt das Ziel. Ist keins gesetzt, erklärt eine Fehlermeldung, wo man es einträgt.
+- **Ziel der Person nicht auswählbar:** Das Feld „Gratulation senden an“ ist jetzt immer sichtbar (ohne Haken „Gratulation automatisch senden“ abgeblendet, mit Hinweis), statt erst nach dem Anhaken zu erscheinen.
+
+### Hinweis zum Update
+Nach dem Update den Browser mit **Strg + F5** neu laden.
+
+---
+
+### Fixed
+- **“Send test” went to the person or found no target.** Test messages now always go to your own target from the settings (“Send reminders and test messages to”) – never to the person. The button is called “Send test to me”, the message starts with “[Test für first name]” and the confirmation names the target. If none is set, an error explains where to set it.
+- **Person's target could not be chosen:** the field “Send greeting to” is now always visible (dimmed with a hint while “Send greeting automatically” is off) instead of only appearing after ticking the box.
+
+### Update note
+After updating, reload the browser with **Ctrl + F5**.
+
 ## [0.2.0] – 2026-11-04
 
 ### Neu

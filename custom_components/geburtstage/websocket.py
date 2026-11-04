@@ -184,17 +184,22 @@ async def ws_send_test(hass: HomeAssistant, connection: websocket_api.ActiveConn
         connection.send_error(msg["id"], "invalid_format", str(err))
         return
     if msg["kind"] == "greeting":
-        target = person.get("greeting_notify", "")
         text = manager.greeting_text(person)
         title = manager.greeting_title
     else:
-        target = manager.settings.get("reminder_notify", "")
         text = manager.reminder_text(person, 1)
         title = manager.reminder_title
+    # A test must never reach the person: it always goes to the admin's own target
+    # ("send reminders to" in the settings).
+    target = manager.settings.get("reminder_notify", "")
     if not target:
-        connection.send_error(msg["id"], "no_target", "No notify target configured")
+        connection.send_error(
+            msg["id"],
+            "no_target",
+            'No target for test messages: set "Send reminders to" in the settings',
+        )
         return
-    ok = await manager.async_send(target, f"[Test] {text}", title)
+    ok = await manager.async_send(target, f"[Test für {person.get('first_name', '')}] {text}", title)
     if not ok:
         connection.send_error(msg["id"], "send_failed", f"Sending via {target} failed")
         return

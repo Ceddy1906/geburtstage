@@ -131,31 +131,50 @@ async def test_settings_and_preview(hass: HomeAssistant) -> None:
     assert conn.send_error.call_args[0][1] == "invalid_format"
 
 
-async def test_notify_targets_and_send_test(hass: HomeAssistant) -> None:
-    entry = await _setup(hass)
-    calls = async_mock_service(hass, "notify", "mein_handy")
+async def test_notify_targets_listed(hass: HomeAssistant) -> None:
+    await _setup(hass)
+    async_mock_service(hass, "notify", "mein_handy")
     conn = _conn()
     await _call(hass, ws.ws_notify_targets, conn, {"type": "geburtstage/notify_targets"})
     values = [t["value"] for t in conn.send_result.call_args[0][1]["targets"]]
     assert "notify.mein_handy" in values
 
+
+async def test_send_test_goes_to_admin_target_never_to_the_person(hass: HomeAssistant) -> None:
+    entry = await _setup(hass)
+    mine = async_mock_service(hass, "notify", "mein_handy")
+    persons = async_mock_service(hass, "notify", "person_target")
+    entry.runtime_data.async_set_settings({"reminder_notify": "notify.mein_handy"})
     desc = entry.runtime_data.async_upsert_person(
         {
             "first_name": "Test",
             "birthdate": "1990-01-01",
             "greeting_enabled": True,
-            "greeting_notify": "notify.mein_handy",
+            "greeting_notify": "notify.person_target",
         }
     )
+    # stored person
     conn = _conn()
     await _call(hass, ws.ws_send_test, conn, {"type": "geburtstage/send_test", "person_id": desc["id"]})
-    assert len(calls) == 1
-    assert calls[0].data["message"].startswith("[Test]")
+    assert len(mine) == 1 and mine[0].data["message"].startswith("[Test für Test]")
+    assert not persons
+    assert conn.send_result.call_args[0][1]["notify"] == "notify.mein_handy"
+
+    # unsaved form data, person without own target
+    conn = _conn()
+    await _call(
+        hass,
+        ws.ws_send_test,
+        conn,
+        {"type": "geburtstage/send_test", "person": {"first_name": "Neu", "birthdate": "1990-01-01"}},
+    )
+    assert len(mine) == 2 and "Neu" in mine[1].data["message"]
+    assert not persons
 
 
-async def test_send_test_with_unsaved_form_data(hass: HomeAssistant) -> None:
-    await _setup(hass)
-    calls = async_mock_service(hass, "notify", "form_target")
+async def test_send_test_without_admin_target_is_an_error(hass: HomeAssistant) -> None:
+    entry = await _setup(hass)
+    person_calls = async_mock_service(hass, "notify", "person_target")
     conn = _conn()
     await _call(
         hass,
@@ -165,22 +184,13 @@ async def test_send_test_with_unsaved_form_data(hass: HomeAssistant) -> None:
             "type": "geburtstage/send_test",
             "person": {
                 "first_name": "Neu",
-                "salutation": "herr",
                 "birthdate": "1990-01-01",
-                "greeting_notify": "notify.form_target",
+                "greeting_notify": "notify.person_target",
             },
         },
     )
-    assert len(calls) == 1 and "Neu" in calls[0].data["message"]
-
-    conn = _conn()
-    await _call(
-        hass,
-        ws.ws_send_test,
-        conn,
-        {"type": "geburtstage/send_test", "person": {"first_name": "Neu", "birthdate": "1990-01-01"}},
-    )
     assert conn.send_error.call_args[0][1] == "no_target"
+    assert not person_calls  # even though the person has a target, nothing was sent
 
 
 async def test_settings_equal_to_defaults_are_stored_as_default(hass: HomeAssistant) -> None:
