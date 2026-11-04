@@ -1,0 +1,14 @@
+{
+  "domain": "geburtstage",
+  "name": "Geburtstage",
+  "codeowners": ["@Ceddy1906"],
+  "config_flow": true,
+  "dependencies": ["http", "frontend", "panel_custom", "websocket_api"],
+  "documentation": "https://github.com/Ceddy1906/geburtstage",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/Ceddy1906/geburtstage/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "0.1.0"
+}

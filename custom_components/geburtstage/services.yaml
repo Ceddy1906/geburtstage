@@ -1,0 +1,143 @@
+add_person:
+  fields:
+    first_name:
+      required: true
+      example: "Max"
+      selector:
+        text:
+    last_name:
+      example: "Mustermann"
+      selector:
+        text:
+    birthdate:
+      required: true
+      selector:
+        date:
+    year_known:
+      default: true
+      selector:
+        boolean:
+    salutation:
+      selector:
+        select:
+          translation_key: salutation
+          options:
+            - herr
+            - frau
+    style:
+      default: personal
+      selector:
+        select:
+          translation_key: style
+          options:
+            - personal
+            - formal
+    greeting_enabled:
+      default: false
+      selector:
+        boolean:
+    greeting_notify:
+      example: "notify.mobile_app_pixel_8_pro"
+      selector:
+        text:
+    reminder_days_1:
+      selector:
+        number:
+          min: 0
+          max: 60
+          mode: box
+    reminder_days_2:
+      selector:
+        number:
+          min: 0
+          max: 60
+          mode: box
+
+update_person:
+  fields:
+    person:
+      required: true
+      example: "Max Mustermann"
+      selector:
+        text:
+    first_name:
+      selector:
+        text:
+    last_name:
+      selector:
+        text:
+    birthdate:
+      selector:
+        date:
+    year_known:
+      selector:
+        boolean:
+    salutation:
+      selector:
+        select:
+          translation_key: salutation
+          options:
+            - herr
+            - frau
+    style:
+      selector:
+        select:
+          translation_key: style
+          options:
+            - personal
+            - formal
+    greeting_enabled:
+      selector:
+        boolean:
+    greeting_notify:
+      selector:
+        text:
+    reminder_days_1:
+      selector:
+        number:
+          min: 0
+          max: 60
+          mode: box
+    reminder_days_2:
+      selector:
+        number:
+          min: 0
+          max: 60
+          mode: box
+
+remove_person:
+  fields:
+    person:
+      required: true
+      example: "Max Mustermann"
+      selector:
+        text:
+
+send_greeting:
+  fields:
+    person:
+      required: true
+      example: "Max Mustermann"
+      selector:
+        text:
+    message:
+      selector:
+        text:
+          multiline: true
+    notify:
+      example: "notify.mobile_app_pixel_8_pro"
+      selector:
+        text:
+    title:
+      selector:
+        text:
+
+get_upcoming:
+  fields:
+    days:
+      default: 30
+      selector:
+        number:
+          min: 0
+          max: 366
+          mode: box

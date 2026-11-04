@@ -1,0 +1,35 @@
+name: Release
+
+# A push mirror from Gitea transfers tags but not GitHub releases.
+# This workflow turns every pushed version tag (v1.2.3) into a GitHub release,
+# which is what HACS uses to offer updates.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check that the tag matches manifest.json
+        run: |
+          manifest=$(python3 -c "import json;print(json.load(open('custom_components/geburtstage/manifest.json'))['version'])")
+          if [ "v$manifest" != "${GITHUB_REF_NAME}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match manifest version v$manifest" >&2
+            exit 1
+          fi
+      - name: Zip the integration
+        run: |
+          cd custom_components/geburtstage
+          zip -r ../../geburtstage.zip . -x "__pycache__/*"
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: geburtstage.zip
+          generate_release_notes: true

@@ -1,0 +1,103 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Geburtstage",
+        "description": "Richtet das Geburtstagsmanagement ein. Danach findest du in der Seitenleiste den Eintrag **Geburtstage**, um Personen anzulegen, Benachrichtigungen zu wählen und die Nachrichtentexte zu bearbeiten."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Geburtstage ist bereits eingerichtet."
+    }
+  },
+  "entity": {
+    "calendar": {
+      "calendar": { "name": "Geburtstagskalender" }
+    },
+    "sensor": {
+      "upcoming": { "name": "Kommende Geburtstage" },
+      "next_birthday": { "name": "Nächster Geburtstag" },
+      "today": { "name": "Geburtstage heute" }
+    },
+    "event": {
+      "events": {
+        "name": "Geburtstags-Ereignis",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "birthday": "Geburtstag",
+              "reminder": "Erinnerung"
+            }
+          }
+        }
+      }
+    }
+  },
+  "selector": {
+    "salutation": {
+      "options": { "herr": "Herr", "frau": "Frau" }
+    },
+    "style": {
+      "options": { "personal": "Persönlich", "formal": "Förmlich" }
+    }
+  },
+  "services": {
+    "add_person": {
+      "name": "Person hinzufügen",
+      "description": "Fügt eine Person zur Geburtstagsliste hinzu.",
+      "fields": {
+        "first_name": { "name": "Vorname", "description": "Vorname." },
+        "last_name": { "name": "Nachname", "description": "Nachname (nötig für die förmliche Anrede)." },
+        "birthdate": { "name": "Geburtsdatum", "description": "Geburtsdatum. Das Jahr wird ignoriert, wenn es unbekannt ist." },
+        "year_known": { "name": "Jahr bekannt", "description": "Ausschalten, wenn das Geburtsjahr unbekannt ist (dann wird kein Alter angezeigt)." },
+        "salutation": { "name": "Anrede", "description": "Bestimmt die passende Begrüßung." },
+        "style": { "name": "Stil", "description": "Persönlich (Lieber Max) oder förmlich (Sehr geehrter Herr Müller)." },
+        "greeting_enabled": { "name": "Gratulation automatisch senden", "description": "Die Gratulation am Geburtstag automatisch senden." },
+        "greeting_notify": { "name": "Benachrichtigungsziel", "description": "Notify-Dienst oder -Entity für die Gratulation, z. B. notify.mobile_app_handy." },
+        "reminder_days_1": { "name": "Erinnerung 1 (Tage vorher)", "description": "Leer oder 0 = keine Erinnerung." },
+        "reminder_days_2": { "name": "Erinnerung 2 (Tage vorher)", "description": "Leer oder 0 = keine zweite Erinnerung." }
+      }
+    },
+    "update_person": {
+      "name": "Person ändern",
+      "description": "Ändert eine vorhandene Person. Es werden nur die angegebenen Felder geändert.",
+      "fields": {
+        "person": { "name": "Person", "description": "Vollständiger Name oder ID der Person." },
+        "first_name": { "name": "Vorname", "description": "Vorname." },
+        "last_name": { "name": "Nachname", "description": "Nachname." },
+        "birthdate": { "name": "Geburtsdatum", "description": "Geburtsdatum." },
+        "year_known": { "name": "Jahr bekannt", "description": "Ob das Geburtsjahr bekannt ist." },
+        "salutation": { "name": "Anrede", "description": "Bestimmt die passende Begrüßung." },
+        "style": { "name": "Stil", "description": "Persönlich oder förmlich." },
+        "greeting_enabled": { "name": "Gratulation automatisch senden", "description": "Die Gratulation automatisch senden." },
+        "greeting_notify": { "name": "Benachrichtigungsziel", "description": "Notify-Dienst oder -Entity für die Gratulation." },
+        "reminder_days_1": { "name": "Erinnerung 1 (Tage vorher)", "description": "Leer oder 0 = keine Erinnerung." },
+        "reminder_days_2": { "name": "Erinnerung 2 (Tage vorher)", "description": "Leer oder 0 = keine zweite Erinnerung." }
+      }
+    },
+    "remove_person": {
+      "name": "Person löschen",
+      "description": "Löscht eine Person aus der Liste.",
+      "fields": {
+        "person": { "name": "Person", "description": "Vollständiger Name oder ID der Person." }
+      }
+    },
+    "send_greeting": {
+      "name": "Gratulation senden",
+      "description": "Sendet jetzt eine Gratulation. Ohne Nachricht wird ein zufälliger Text aus der Liste verwendet.",
+      "fields": {
+        "person": { "name": "Person", "description": "Vollständiger Name oder ID der Person." },
+        "message": { "name": "Nachricht", "description": "Eigener Text. Leer lassen für einen zufälligen Text aus der Liste." },
+        "notify": { "name": "Benachrichtigungsziel", "description": "Überschreibt das gespeicherte Ziel." },
+        "title": { "name": "Titel", "description": "Überschreibt den Titel der Benachrichtigung." }
+      }
+    },
+    "get_upcoming": {
+      "name": "Kommende Geburtstage abrufen",
+      "description": "Liefert die Geburtstage der nächsten Tage (Antwortdaten).",
+      "fields": {
+        "days": { "name": "Tage", "description": "Wie viele Tage vorausgeschaut wird." }
+      }
+    }
+  }
+}

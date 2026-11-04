@@ -1,0 +1,103 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Birthdays",
+        "description": "Set up the birthday manager. Afterwards open **Birthdays** in the sidebar to add people, choose notifications and edit the message texts."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Birthdays is already set up."
+    }
+  },
+  "entity": {
+    "calendar": {
+      "calendar": { "name": "Birthday calendar" }
+    },
+    "sensor": {
+      "upcoming": { "name": "Upcoming birthdays" },
+      "next_birthday": { "name": "Next birthday" },
+      "today": { "name": "Birthdays today" }
+    },
+    "event": {
+      "events": {
+        "name": "Birthday event",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "birthday": "Birthday",
+              "reminder": "Reminder"
+            }
+          }
+        }
+      }
+    }
+  },
+  "selector": {
+    "salutation": {
+      "options": { "herr": "Mr.", "frau": "Ms." }
+    },
+    "style": {
+      "options": { "personal": "Personal", "formal": "Formal" }
+    }
+  },
+  "services": {
+    "add_person": {
+      "name": "Add person",
+      "description": "Adds a person to the birthday list.",
+      "fields": {
+        "first_name": { "name": "First name", "description": "First name." },
+        "last_name": { "name": "Last name", "description": "Last name (needed for the formal salutation)." },
+        "birthdate": { "name": "Birth date", "description": "Date of birth. The year is ignored if it is unknown." },
+        "year_known": { "name": "Year known", "description": "Turn off if the year of birth is unknown (no age is shown)." },
+        "salutation": { "name": "Salutation", "description": "Used to choose the right greeting." },
+        "style": { "name": "Style", "description": "Personal (Dear Max) or formal (Dear Mr. Smith)." },
+        "greeting_enabled": { "name": "Send greeting automatically", "description": "Send the congratulation automatically on the birthday." },
+        "greeting_notify": { "name": "Notify target", "description": "Notify service or entity for the congratulation, e.g. notify.mobile_app_phone." },
+        "reminder_days_1": { "name": "Reminder 1 (days before)", "description": "Empty or 0 = no reminder." },
+        "reminder_days_2": { "name": "Reminder 2 (days before)", "description": "Empty or 0 = no second reminder." }
+      }
+    },
+    "update_person": {
+      "name": "Update person",
+      "description": "Changes an existing person. Only the given fields are changed.",
+      "fields": {
+        "person": { "name": "Person", "description": "Full name or ID of the person." },
+        "first_name": { "name": "First name", "description": "First name." },
+        "last_name": { "name": "Last name", "description": "Last name." },
+        "birthdate": { "name": "Birth date", "description": "Date of birth." },
+        "year_known": { "name": "Year known", "description": "Whether the year of birth is known." },
+        "salutation": { "name": "Salutation", "description": "Used to choose the right greeting." },
+        "style": { "name": "Style", "description": "Personal or formal." },
+        "greeting_enabled": { "name": "Send greeting automatically", "description": "Send the congratulation automatically." },
+        "greeting_notify": { "name": "Notify target", "description": "Notify service or entity for the congratulation." },
+        "reminder_days_1": { "name": "Reminder 1 (days before)", "description": "Empty or 0 = no reminder." },
+        "reminder_days_2": { "name": "Reminder 2 (days before)", "description": "Empty or 0 = no second reminder." }
+      }
+    },
+    "remove_person": {
+      "name": "Remove person",
+      "description": "Deletes a person from the list.",
+      "fields": {
+        "person": { "name": "Person", "description": "Full name or ID of the person." }
+      }
+    },
+    "send_greeting": {
+      "name": "Send greeting",
+      "description": "Sends a congratulation now. Without a message a random text is used.",
+      "fields": {
+        "person": { "name": "Person", "description": "Full name or ID of the person." },
+        "message": { "name": "Message", "description": "Own text. Leave empty to use a random text from the list." },
+        "notify": { "name": "Notify target", "description": "Overrides the stored notify target." },
+        "title": { "name": "Title", "description": "Overrides the notification title." }
+      }
+    },
+    "get_upcoming": {
+      "name": "Get upcoming birthdays",
+      "description": "Returns the birthdays within the next days (response data).",
+      "fields": {
+        "days": { "name": "Days", "description": "How many days to look ahead." }
+      }
+    }
+  }
+}
