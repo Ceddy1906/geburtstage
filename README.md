@@ -19,7 +19,7 @@ Verwalte Geburtstage komfortabel in Home Assistant, lass dich erinnern und gratu
 - **Gratulation** am Geburtstag über einen **vorhandenen Notify-Dienst oder eine Notify-Entity** – pro Person wählbar. Pro Stil gibt es eine Liste mit 10 Texten (änderbar), pro Gratulation wird zufällig einer gewählt.
 - **Erinnerungen** X Tage vorher (bis zu zwei Werte pro Person, leer = keine Erinnerung).
 - **Eigene Automationen:** Zu jedem Geburtstag und jeder Erinnerung wird ein Ereignis ausgelöst – mit Name, Alter, fertiger Anrede und Text. Ist „Gratulation automatisch senden“ aus, verschickt die Integration nichts: Du bestimmst in deiner Automation selbst über Text und Notify. [Beispiele unten](#automationen-mit-geburtstagen).
-- **Dashboard-Karte** `custom:geburtstage-card` mit visuellem Editor: Zeitraum, Anzahl, Darstellung (Liste / kompakt / Chips), Alter/Datum/Countdown ein- und ausblenden, Hervorhebung für heutige und runde Geburtstage, „Karte ausblenden wenn leer“, transparenter Hintergrund. Unterstützt das Sections-Raster.
+- **Dashboard-Karte** `custom:geburtstage-card` mit visuellem Editor: Zeitraum, Anzahl, Darstellung (Liste / kompakt / Chips), Alter/Datum/Countdown ein- und ausblenden, Hervorhebung für heutige und runde Geburtstage, **am Geburtstag eine Torte statt der Initialen (Symbol frei wählbar)**, „Karte ausblenden wenn leer“, transparenter Hintergrund. Unterstützt das Sections-Raster.
 - **Entities:** Kalender, *Kommende Geburtstage*, *Nächster Geburtstag*, *Geburtstage heute*, *Geburtstags-Ereignis*.
 - **Import/Export** per CSV und vCard (`.vcf` aus deinen Kontakten).
 - 29. Februar wird in Nicht-Schaltjahren am **1. März** gefeiert. Ist das Geburtsjahr unbekannt, wird kein Alter angezeigt.
@@ -273,7 +273,7 @@ Manage birthdays in Home Assistant, get reminders and send congratulations autom
 - **Congratulation** on the birthday via an **existing notify service or notify entity**, chosen per person. Ten editable texts per style, one picked at random each time.
 - **Reminders** X days before (up to two values per person, empty = none).
 - **Your own automations:** every birthday and reminder fires an event with name, age, ready-made greeting and text. With “send greeting automatically” off the integration sends nothing – you decide text and notify in your automation. [Examples below](#automations-with-birthdays).
-- **Dashboard card** `custom:geburtstage-card` with visual editor (range, count, list / compact / chips layout, show or hide age / date / countdown, highlight today and round birthdays, hide when empty, transparent background, Sections grid support).
+- **Dashboard card** `custom:geburtstage-card` with visual editor (range, count, list / compact / chips layout, show or hide age / date / countdown, highlight today and round birthdays, **a cake instead of the initials on the birthday (icon freely selectable)**, hide when empty, transparent background, Sections grid support).
 - **Entities:** calendar, upcoming birthdays, next birthday, birthdays today, birthday event.
 - **Import/export** via CSV and vCard.
 - 29 February is celebrated on **1 March** in non-leap years.

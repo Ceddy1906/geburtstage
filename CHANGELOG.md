@@ -1,5 +1,25 @@
 # Änderungen / Changelog
 
+## [0.3.1] – 2026-11-05
+
+### Neu
+- **Torte am Geburtstag:** In der Dashboard-Karte erscheint bei heutigen Geburtstagen statt der Initialen ein Torten-Symbol (in Liste, kompakt und Chips).
+- **Symbol wählbar:** Im Karten-Editor gibt es „Symbol für heutige Geburtstage“ (Icon-Auswahl mit allen MDI-Symbolen, Standard `mdi:cake-variant`) und den Schalter „Heute: Symbol statt Initialen“, um das Verhalten auszuschalten.
+- Die Einstellung „Symbol: Torten-Symbol“ zeigt für alle anderen Personen jetzt `mdi:cake-variant-outline`, damit sich heute und nicht-heute unterscheiden.
+
+### Hinweis zum Update
+Nach dem Update den Browser mit **Strg + F5** neu laden.
+
+---
+
+### New
+- **Cake on the birthday:** on today's birthdays the dashboard card shows a cake icon instead of the initials (list, compact and chips layout).
+- **Selectable icon:** the card editor has “Icon for today's birthdays” (icon picker with all MDI icons, default `mdi:cake-variant`) and the switch “Today: icon instead of initials” to turn the behavior off.
+- The setting “Symbol: cake icon” now shows `mdi:cake-variant-outline` for everyone else, so today and not-today can be told apart.
+
+### Update note
+After updating, reload the browser with **Ctrl + F5**.
+
 ## [0.3.0] – 2026-11-04
 
 ### Neu

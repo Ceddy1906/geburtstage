@@ -1,6 +1,6 @@
 /* Geburtstage – Lovelace card (vanilla web component, no external dependencies) */
 
-const CARD_VERSION = "0.3.0";
+const CARD_VERSION = "0.3.1";
 
 const DEFAULTS = {
   title: "",
@@ -13,6 +13,8 @@ const DEFAULTS = {
   show_countdown: true,
   show_weekday: false,
   avatar: "initials",
+  show_today_icon: true,
+  today_icon: "mdi:cake-variant",
   highlight_today: true,
   highlight_round: true,
   hide_when_empty: false,
@@ -49,6 +51,8 @@ const L10N = {
     e_avatar_initials: "Initialen",
     e_avatar_icon: "Torten-Symbol",
     e_avatar_none: "Keines",
+    e_show_today_icon: "Heute: Symbol statt Initialen",
+    e_today_icon: "Symbol für heutige Geburtstage",
     e_highlight_today: "Heutige hervorheben",
     e_highlight_round: "Runde Geburtstage hervorheben",
     e_hide_when_empty: "Karte ausblenden, wenn leer",
@@ -87,6 +91,8 @@ const L10N = {
     e_avatar_initials: "Initials",
     e_avatar_icon: "Cake icon",
     e_avatar_none: "None",
+    e_show_today_icon: "Today: icon instead of initials",
+    e_today_icon: "Icon for today's birthdays",
     e_highlight_today: "Highlight today",
     e_highlight_round: "Highlight round birthdays",
     e_hide_when_empty: "Hide card when empty",
@@ -229,9 +235,14 @@ class GeburtstageCard extends HTMLElement {
   }
 
   _avatar(p) {
-    const mode = this._config.avatar;
+    const c = this._config;
+    const mode = c.avatar;
     if (mode === "none") return "";
-    if (mode === "icon") return `<div class="avatar"><ha-icon icon="${p.is_today ? "mdi:party-popper" : "mdi:cake-variant"}"></ha-icon></div>`;
+    // On the birthday itself show a cake (or the chosen icon) instead of the initials.
+    if (c.show_today_icon && p.is_today) {
+      return `<div class="avatar"><ha-icon icon="${esc(c.today_icon || DEFAULTS.today_icon)}"></ha-icon></div>`;
+    }
+    if (mode === "icon") return `<div class="avatar"><ha-icon icon="mdi:cake-variant-outline"></ha-icon></div>`;
     const initials = `${(p.first_name || "?")[0] || ""}${(p.last_name || "")[0] || ""}`.toUpperCase();
     return `<div class="avatar">${esc(initials)}</div>`;
   }
@@ -330,6 +341,7 @@ class GeburtstageCardEditor extends HTMLElement {
           { name: "date_format", required: true, selector: sel("e_date", ["short", "long", "numeric"]) },
         ],
       },
+      { name: "today_icon", selector: { icon: {} } },
       {
         type: "grid",
         name: "",
@@ -339,6 +351,7 @@ class GeburtstageCardEditor extends HTMLElement {
           { name: "show_date", selector: { boolean: {} } },
           { name: "show_countdown", selector: { boolean: {} } },
           { name: "show_weekday", selector: { boolean: {} } },
+          { name: "show_today_icon", selector: { boolean: {} } },
           { name: "highlight_today", selector: { boolean: {} } },
           { name: "highlight_round", selector: { boolean: {} } },
           { name: "hide_when_empty", selector: { boolean: {} } },
