@@ -1,5 +1,25 @@
 # Änderungen / Changelog
 
+## [1.0.0] – 2026-11-12
+
+Erste stabile Version: Der Funktionsumfang (Personenverwaltung im Panel, Gratulationen und Erinnerungen mit Zeitfenster, Ereignisse für eigene Automationen, Dashboard-Karte, Import/Export) hat sich im Einsatz bewährt.
+
+### Neu
+- **Titel optional:** „Titel Gratulation“ und „Titel Erinnerung“ in den Einstellungen haben je einen Schalter **„Titel mitsenden“**. Ausgeschaltet wird nur der Nachrichtentext gesendet (ohne `title`) – praktisch für Messenger wie Signal, die keinen Titel anzeigen. Das gilt auch für „Test an mich senden“. Standard bleibt „an“, bestehende Einstellungen ändern sich nicht.
+
+### Hinweis zum Update
+Nach dem Update den Browser mit **Strg + F5** neu laden.
+
+---
+
+First stable release: the feature set (people management in the panel, greetings and reminders with time window, events for your own automations, dashboard card, import/export) has proven itself in use.
+
+### New
+- **Optional titles:** “Greeting title” and “Reminder title” in the settings each have a switch **“Send the title”**. When off, only the message text is sent (without `title`) – handy for messengers such as Signal that do not show a title. This also applies to “Send test to me”. The default stays on, existing settings do not change.
+
+### Update note
+After updating, reload the browser with **Ctrl + F5**.
+
 ## [0.3.1] – 2026-11-05
 
 ### Neu

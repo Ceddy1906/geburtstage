@@ -53,6 +53,8 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     "auto_reminders": True,
     "greeting_title": "",
     "reminder_title": "",
+    "greeting_title_enabled": True,
+    "reminder_title_enabled": True,
     "texts_personal": None,
     "texts_formal": None,
     "reminder_template": None,
@@ -192,6 +194,8 @@ def normalize_settings(data: dict[str, Any], base: dict[str, Any]) -> dict[str, 
         "auto_reminders": bool(merged.get("auto_reminders", True)),
         "greeting_title": _clean_str(merged.get("greeting_title"), "greeting_title", 100),
         "reminder_title": _clean_str(merged.get("reminder_title"), "reminder_title", 100),
+        "greeting_title_enabled": bool(merged.get("greeting_title_enabled", True)),
+        "reminder_title_enabled": bool(merged.get("reminder_title_enabled", True)),
         "texts_personal": _texts("texts_personal"),
         "texts_formal": _texts("texts_formal"),
         "reminder_template": template,
@@ -433,12 +437,16 @@ class GeburtstageManager:
 
     @property
     def greeting_title(self) -> str:
-        """Title used for congratulations."""
+        """Title used for congratulations (empty = send no title)."""
+        if not self.settings.get("greeting_title_enabled", True):
+            return ""
         return self.settings["greeting_title"] or DEFAULT_TITLES[self.lang]["greeting"]
 
     @property
     def reminder_title(self) -> str:
-        """Title used for reminders."""
+        """Title used for reminders (empty = send no title)."""
+        if not self.settings.get("reminder_title_enabled", True):
+            return ""
         return self.settings["reminder_title"] or DEFAULT_TITLES[self.lang]["reminder"]
 
     # ------------------------------------------------------------------ #

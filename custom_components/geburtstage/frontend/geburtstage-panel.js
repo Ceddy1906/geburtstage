@@ -69,6 +69,8 @@ const TEXTS = {
     s_auto_reminders: "Erinnerungen automatisch senden",
     s_titles: "Titel der Nachrichten",
     s_greeting_title: "Titel Gratulation",
+    s_title_enabled: "Titel mitsenden",
+    s_title_hint: "Ohne Titel wird nur der Nachrichtentext gesendet – praktisch für Messenger wie Signal, die keinen Titel anzeigen.",
     s_reminder_title: "Titel Erinnerung",
     s_reminder_template: "Text der Erinnerung",
     s_texts_personal: "Gratulationstexte – persönlich",
@@ -173,6 +175,8 @@ const TEXTS = {
     s_auto_reminders: "Send reminders automatically",
     s_titles: "Message titles",
     s_greeting_title: "Greeting title",
+    s_title_enabled: "Send the title",
+    s_title_hint: "Without a title only the message text is sent – handy for messengers such as Signal that do not show a title.",
     s_reminder_title: "Reminder title",
     s_reminder_template: "Reminder text",
     s_texts_personal: "Greeting texts – personal",
@@ -822,9 +826,12 @@ class GeburtstagePanel extends HTMLElement {
         </div>
         <label class="check"><input id="s_auto" type="checkbox"${s.auto_reminders ? " checked" : ""}> ${esc(this.t("s_auto_reminders"))}</label>
         <div class="row">
-          <div class="field"><label>${esc(this.t("s_greeting_title"))}</label><input id="s_gtitle" value="${esc(s.greeting_title)}"></div>
-          <div class="field"><label>${esc(this.t("s_reminder_title"))}</label><input id="s_rtitle" value="${esc(s.reminder_title)}"></div>
+          <div class="field"><label>${esc(this.t("s_greeting_title"))}</label><input id="s_gtitle" value="${esc(s.greeting_title)}"${s.greeting_title_enabled ? "" : " disabled"}>
+            <label class="check" style="margin:8px 0 0"><input id="s_gtitle_on" type="checkbox"${s.greeting_title_enabled ? " checked" : ""}> ${esc(this.t("s_title_enabled"))}</label></div>
+          <div class="field"><label>${esc(this.t("s_reminder_title"))}</label><input id="s_rtitle" value="${esc(s.reminder_title)}"${s.reminder_title_enabled ? "" : " disabled"}>
+            <label class="check" style="margin:8px 0 0"><input id="s_rtitle_on" type="checkbox"${s.reminder_title_enabled ? " checked" : ""}> ${esc(this.t("s_title_enabled"))}</label></div>
         </div>
+        <div class="hint" style="margin:-6px 0 12px">${esc(this.t("s_title_hint"))}</div>
         <div class="field"><label>${esc(this.t("s_reminder_template"))}</label><input id="s_rtemplate" value="${esc(s.reminder_template)}"></div>
         <div class="hint">${esc(this.t("s_placeholders"))}</div>
       </div>
@@ -844,6 +851,9 @@ class GeburtstagePanel extends HTMLElement {
         </div>
       </div>`;
     this._initCombo(el.querySelector("#s_rnotify"));
+    for (const [on, input] of [["#s_gtitle_on", "#s_gtitle"], ["#s_rtitle_on", "#s_rtitle"]]) {
+      el.querySelector(on).addEventListener("change", (ev) => { el.querySelector(input).disabled = !ev.target.checked; });
+    }
     this._lastField = null;
     el.addEventListener("focusin", (ev) => {
       if (ev.target.matches("textarea, #s_rtemplate")) this._lastField = ev.target;
@@ -897,6 +907,8 @@ class GeburtstagePanel extends HTMLElement {
       auto_reminders: el.querySelector("#s_auto").checked,
       greeting_title: el.querySelector("#s_gtitle").value.trim(),
       reminder_title: el.querySelector("#s_rtitle").value.trim(),
+      greeting_title_enabled: el.querySelector("#s_gtitle_on").checked,
+      reminder_title_enabled: el.querySelector("#s_rtitle_on").checked,
       reminder_template: el.querySelector("#s_rtemplate").value.trim(),
       texts_personal: lines("#s_tp"),
       texts_formal: lines("#s_tf"),
@@ -907,6 +919,8 @@ class GeburtstagePanel extends HTMLElement {
       settings.reminder_template = null;
       settings.greeting_title = "";
       settings.reminder_title = "";
+      settings.greeting_title_enabled = true;
+      settings.reminder_title_enabled = true;
     }
     try {
       const res = await this._hass.callWS({ type: "geburtstage/settings_set", settings });

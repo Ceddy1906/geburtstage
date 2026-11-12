@@ -300,3 +300,39 @@ async def test_time_window_validation(hass: HomeAssistant) -> None:
     assert manager.settings["send_time_end"] == "11:30:00"
     manager.async_set_settings({"send_time_end": ""})  # empty = exact time again
     assert manager.settings["send_time_end"] == ""
+
+
+async def test_titles_can_be_switched_off(hass: HomeAssistant) -> None:
+    entry = await _setup(hass)
+    manager = entry.runtime_data
+    greet = async_mock_service(hass, "notify", "greet_target")
+    remind = async_mock_service(hass, "notify", "remind_target")
+    manager.async_set_settings(
+        {
+            "reminder_notify": "notify.remind_target",
+            "greeting_title_enabled": False,
+            "reminder_title_enabled": False,
+        }
+    )
+    manager.async_upsert_person(
+        {
+            "first_name": "Ohne",
+            "birthdate": _born(0),
+            "greeting_enabled": True,
+            "greeting_notify": "notify.greet_target",
+            "reminder_days_1": None,
+        }
+    )
+    manager.async_upsert_person(
+        {"first_name": "Spaeter", "birthdate": _born(1), "reminder_days_1": 1}
+    )
+    await manager.async_run_daily()
+    await hass.async_block_till_done()
+    assert len(greet) == 1 and "title" not in greet[0].data
+    assert len(remind) == 1 and "title" not in remind[0].data
+
+    # switched on again -> the (default) title is sent
+    manager.async_set_settings({"greeting_title_enabled": True})
+    assert manager.greeting_title
+    assert manager.settings_view()["greeting_title_enabled"] is True
+    assert manager.settings_view()["reminder_title_enabled"] is False
