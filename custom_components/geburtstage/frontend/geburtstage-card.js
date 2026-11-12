@@ -1,6 +1,6 @@
 /* Geburtstage – Lovelace card (vanilla web component, no external dependencies) */
 
-const CARD_VERSION = "1.0.0";
+const CARD_VERSION = "1.0.1";
 
 const DEFAULTS = {
   title: "",

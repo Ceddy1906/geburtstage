@@ -1,5 +1,23 @@
 # Änderungen / Changelog
 
+## [1.0.1] – 2026-11-12
+
+### Verbessert
+- **Einstellungen werden sofort gespeichert:** Kanal („Erinnerungen senden an“), Uhrzeiten, Titel, Erinnerungstext und alle Schalter werden direkt beim Ändern gespeichert (Hinweis „Gespeichert“). Bisher musste man dafür unten „Speichern“ klicken, was leicht mit dem Speichern der Gratulationstexte verwechselt wurde.
+- Der untere Button heißt jetzt **„Texte speichern“** und speichert die Gratulationstexte. Ein Hinweis oben erklärt, was automatisch gespeichert wird.
+
+### Hinweis zum Update
+Nach dem Update den Browser mit **Strg + F5** neu laden.
+
+---
+
+### Improved
+- **Settings are saved immediately:** channel (“Send reminders to”), times, titles, reminder text and all switches are saved as soon as you change them (a “Saved” note appears). Before, you had to click “Save” at the bottom, which was easily mistaken for saving the greeting texts.
+- The bottom button is now **“Save texts”** and saves the greeting texts. A hint at the top explains what is saved automatically.
+
+### Update note
+After updating, reload the browser with **Ctrl + F5**.
+
 ## [1.0.0] – 2026-11-12
 
 Erste stabile Version: Der Funktionsumfang (Personenverwaltung im Panel, Gratulationen und Erinnerungen mit Zeitfenster, Ereignisse für eigene Automationen, Dashboard-Karte, Import/Export) hat sich im Einsatz bewährt.

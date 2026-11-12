@@ -94,6 +94,8 @@ const TEXTS = {
     ph_where_both: "Gratulation und Erinnerung",
     ph_where_reminder: "Erinnerung (in Gratulationen: „heute“)",
     s_reset: "Standard wiederherstellen",
+    s_save_texts: "Texte speichern",
+    s_autosave_hint: "Kanal, Zeiten, Titel und Schalter werden sofort gespeichert. Die Gratulationstexte werden mit „Texte speichern“ übernommen.",
     s_event_info:
       "Wer eigene Automationen nutzen möchte: Das Ereignis „Geburtstags-Ereignis“ liefert Name, Alter und den fertigen Text. Bei Personen ohne „automatisch senden“ wird nichts versendet.",
     imp_title: "Import",
@@ -200,6 +202,8 @@ const TEXTS = {
     ph_where_both: "Greeting and reminder",
     ph_where_reminder: "Reminder (in greetings: “today”)",
     s_reset: "Restore defaults",
+    s_save_texts: "Save texts",
+    s_autosave_hint: "Channel, times, titles and switches are saved immediately. The greeting texts are applied with “Save texts”.",
     s_event_info:
       "For your own automations: the “Birthday event” entity delivers name, age and the finished text. Nothing is sent for people without “send automatically”.",
     imp_title: "Import",
@@ -554,7 +558,7 @@ class GeburtstagePanel extends HTMLElement {
   }
 
   /** Searchable select: filters by substring once at least two characters were typed. */
-  _initCombo(combo) {
+  _initCombo(combo, onChange) {
     const input = combo.querySelector("input");
     const clear = combo.querySelector(".combo-clear");
     const list = document.createElement("div");
@@ -625,11 +629,13 @@ class GeburtstagePanel extends HTMLElement {
       highlight();
     };
     const choose = (value) => {
+      const changed = combo.dataset.value !== value;
       combo.dataset.value = value;
       input.value = this._targetDisplay(value);
       clear.hidden = !value;
       edited = false;
       close();
+      if (changed && onChange) onChange(value);
     };
     input.addEventListener("focus", () => { edited = false; input.select(); open(); });
     input.addEventListener("click", () => { if (list.hidden) { edited = false; open(); } });
@@ -817,6 +823,7 @@ class GeburtstagePanel extends HTMLElement {
     el.innerHTML = `
       <div class="card">
         <h2>${esc(this.t("s_general"))}</h2>
+        <div class="hint" style="margin:-6px 0 12px">${esc(this.t("s_autosave_hint"))}</div>
         <div class="row">
           <div class="field"><label>${esc(this.t("s_send_time"))}</label><input id="s_time" type="time" step="60" value="${esc(s.send_time.slice(0, 5))}"></div>
           <div class="field"><label>${esc(this.t("s_send_time_end"))}</label><input id="s_time_end" type="time" step="60" value="${esc((s.send_time_end || "").slice(0, 5))}"><div class="hint">${esc(this.t("s_window_hint"))}</div></div>
@@ -847,13 +854,24 @@ class GeburtstagePanel extends HTMLElement {
         <div class="bar" style="margin-top:12px">
           <button class="btn" id="s_reset">${esc(this.t("s_reset"))}</button>
           <span class="grow"></span>
-          <button class="btn primary" id="s_save">${esc(this.t("save"))}</button>
+          <button class="btn primary" id="s_save">${esc(this.t("s_save_texts"))}</button>
         </div>
       </div>`;
-    this._initCombo(el.querySelector("#s_rnotify"));
-    for (const [on, input] of [["#s_gtitle_on", "#s_gtitle"], ["#s_rtitle_on", "#s_rtitle"]]) {
-      el.querySelector(on).addEventListener("change", (ev) => { el.querySelector(input).disabled = !ev.target.checked; });
+    // Everything except the long texts is saved as soon as it is changed.
+    this._initCombo(el.querySelector("#s_rnotify"), (value) => this._autoSave({ reminder_notify: value }));
+    for (const [on, input, key] of [["#s_gtitle_on", "#s_gtitle", "greeting_title_enabled"], ["#s_rtitle_on", "#s_rtitle", "reminder_title_enabled"]]) {
+      el.querySelector(on).addEventListener("change", (ev) => {
+        el.querySelector(input).disabled = !ev.target.checked;
+        this._autoSave({ [key]: ev.target.checked });
+      });
     }
+    const timeValue = (id) => el.querySelector(id).value;
+    el.querySelector("#s_time").addEventListener("change", () => this._autoSave({ send_time: `${timeValue("#s_time") || "08:00"}:00` }));
+    el.querySelector("#s_time_end").addEventListener("change", () => this._autoSave({ send_time_end: timeValue("#s_time_end") ? `${timeValue("#s_time_end")}:00` : "" }));
+    el.querySelector("#s_auto").addEventListener("change", (ev) => this._autoSave({ auto_reminders: ev.target.checked }));
+    el.querySelector("#s_gtitle").addEventListener("change", (ev) => this._autoSave({ greeting_title: ev.target.value.trim() }));
+    el.querySelector("#s_rtitle").addEventListener("change", (ev) => this._autoSave({ reminder_title: ev.target.value.trim() }));
+    el.querySelector("#s_rtemplate").addEventListener("change", (ev) => this._autoSave({ reminder_template: ev.target.value.trim() }));
     this._lastField = null;
     el.addEventListener("focusin", (ev) => {
       if (ev.target.matches("textarea, #s_rtemplate")) this._lastField = ev.target;
@@ -895,6 +913,17 @@ class GeburtstagePanel extends HTMLElement {
     field.focus();
     field.setSelectionRange(pos, pos);
     field.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  /** Save a few settings right away without re-rendering (keeps unsaved text edits). */
+  async _autoSave(partial) {
+    try {
+      const res = await this._hass.callWS({ type: "geburtstage/settings_set", settings: partial });
+      this._settings = res.settings;
+      this._toast(this.t("saved"));
+    } catch (err) {
+      this._toast(this._errorText(err), true);
+    }
   }
 
   async _saveSettings(reset) {
